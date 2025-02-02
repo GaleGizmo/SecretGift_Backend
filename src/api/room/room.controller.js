@@ -3,6 +3,16 @@ import generateUniqueCode from "../../utils/generateCode.js";
 import Room from "./room.model.js";
 import  { nanoid } from "nanoid";
 
+const getAllRooms = async (req, res) => {
+    try {
+        const rooms = await Room.find();
+        return res.status(200).json({ rooms });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+
 const createRoom = async (req, res) => {
     try {
       const room_code = await generateUniqueCode();
@@ -77,126 +87,126 @@ const deleteRoom = async (req, res) => {
     }
 }
 
-const seedRooms = async () => {
-    try {
-      await Room.insertMany([
+// const seedRooms = async () => {
+//     try {
+//       await Room.insertMany([
         
-            {
-              "name": "Amigo Invisible 2024",
-              "owner_id": "60d5f9e8c2b9f632ac0f1a1a",
-              "average_cost": 25,
-              "status": "active",
-              "room_code": "AB12",
-              "players": [
-                {
-                  "name": "Juan",
-                  "email": "juan@example.com",
-                  "linked_to": "Maria",
-                  "player_code": "XY34"
-                },
-                {
-                  "name": "Maria",
-                  "email": "maria@example.com",
-                  "linked_to": "Pedro",
-                  "player_code": "CD56"
-                },
-                {
-                  "name": "Pedro",
-                  "email": "pedro@example.com",
-                  "linked_to": "Luis",
-                  "player_code": "EF78"
-                }
-              ],
-              "rules": [
-                {
-                  "player_1": "Juan",
-                  "player_2": "Maria"
-                },
-                {
-                  "player_1": "Maria",
-                  "player_2": "Pedro"
-                }
-              ]
-            },
-            {
-              "name": "Intercambio de Regalos",
-              "owner_id": "60d5f9e8c2b9f632ac0f1a1b",
-              "average_cost": 30,
-              "status": "active",
-              "room_code": "GH90",
-              "players": [
-                {
-                  "name": "Ana",
-                  "email": "ana@example.com",
-                  "linked_to": "Carlos",
-                  "player_code": "IJ12"
-                },
-                {
-                  "name": "Carlos",
-                  "email": "carlos@example.com",
-                  "linked_to": "Sofia",
-                  "player_code": "KL34"
-                },
-                {
-                  "name": "Sofia",
-                  "email": "sofia@example.com",
-                  "linked_to": "Ana",
-                  "player_code": "MN56"
-                }
-              ],
-              "rules": [
-                {
-                  "player_1": "Ana",
-                  "player_2": "Carlos"
-                }
-              ]
-            },
-            {
-              "name": "Fiesta de Fin de Año",
-              "owner_id": "60d5f9e8c2b9f632ac0f1a1c",
-              "average_cost": 50,
-              "status": "finished",
-              "room_code": "OP78",
-              "players": [
-                {
-                  "name": "Luis",
-                  "email": "luis@example.com",
-                  "linked_to": "Elena",
-                  "player_code": "QR90"
-                },
-                {
-                  "name": "Elena",
-                  "email": "elena@example.com",
-                  "linked_to": "Roberto",
-                  "player_code": "ST12"
-                },
-                {
-                  "name": "Roberto",
-                  "email": "roberto@example.com",
-                  "linked_to": "Luis",
-                  "player_code": "UV34"
-                }
-              ],
-              "rules": [
-                {
-                  "player_1": "Luis",
-                  "player_2": "Elena"
-                },
-                {
-                  "player_1": "Roberto",
-                  "player_2": "Luis"
-                }
-              ]
-            }
+//             {
+//               "name": "Amigo Invisible 2024",
+//               "owner_id": "60d5f9e8c2b9f632ac0f1a1a",
+//               "average_cost": 25,
+//               "status": "active",
+//               "room_code": "AB12",
+//               "players": [
+//                 {
+//                   "name": "Juan",
+//                   "email": "juan@example.com",
+//                   "linked_to": "Maria",
+//                   "player_code": "XY34"
+//                 },
+//                 {
+//                   "name": "Maria",
+//                   "email": "maria@example.com",
+//                   "linked_to": "Pedro",
+//                   "player_code": "CD56"
+//                 },
+//                 {
+//                   "name": "Pedro",
+//                   "email": "pedro@example.com",
+//                   "linked_to": "Luis",
+//                   "player_code": "EF78"
+//                 }
+//               ],
+//               "rules": [
+//                 {
+//                   "player_1": "Juan",
+//                   "player_2": "Maria"
+//                 },
+//                 {
+//                   "player_1": "Maria",
+//                   "player_2": "Pedro"
+//                 }
+//               ]
+//             },
+//             {
+//               "name": "Intercambio de Regalos",
+//               "owner_id": "60d5f9e8c2b9f632ac0f1a1b",
+//               "average_cost": 30,
+//               "status": "active",
+//               "room_code": "GH90",
+//               "players": [
+//                 {
+//                   "name": "Ana",
+//                   "email": "ana@example.com",
+//                   "linked_to": "Carlos",
+//                   "player_code": "IJ12"
+//                 },
+//                 {
+//                   "name": "Carlos",
+//                   "email": "carlos@example.com",
+//                   "linked_to": "Sofia",
+//                   "player_code": "KL34"
+//                 },
+//                 {
+//                   "name": "Sofia",
+//                   "email": "sofia@example.com",
+//                   "linked_to": "Ana",
+//                   "player_code": "MN56"
+//                 }
+//               ],
+//               "rules": [
+//                 {
+//                   "player_1": "Ana",
+//                   "player_2": "Carlos"
+//                 }
+//               ]
+//             },
+//             {
+//               "name": "Fiesta de Fin de Año",
+//               "owner_id": "60d5f9e8c2b9f632ac0f1a1c",
+//               "average_cost": 50,
+//               "status": "finished",
+//               "room_code": "OP78",
+//               "players": [
+//                 {
+//                   "name": "Luis",
+//                   "email": "luis@example.com",
+//                   "linked_to": "Elena",
+//                   "player_code": "QR90"
+//                 },
+//                 {
+//                   "name": "Elena",
+//                   "email": "elena@example.com",
+//                   "linked_to": "Roberto",
+//                   "player_code": "ST12"
+//                 },
+//                 {
+//                   "name": "Roberto",
+//                   "email": "roberto@example.com",
+//                   "linked_to": "Luis",
+//                   "player_code": "UV34"
+//                 }
+//               ],
+//               "rules": [
+//                 {
+//                   "player_1": "Luis",
+//                   "player_2": "Elena"
+//                 },
+//                 {
+//                   "player_1": "Roberto",
+//                   "player_2": "Luis"
+//                 }
+//               ]
+//             }
           
           
-      ]);
-      console.log("Datos insertados correctamente");
-    } catch (error) {
-      console.error("Error insertando datos:", error);
-    }
-  };
+//       ]);
+//       console.log("Datos insertados correctamente");
+//     } catch (error) {
+//       console.error("Error insertando datos:", error);
+//     }
+//   };
   
 //   seedRooms();
 
-export default { createRoom, findRoomByAccessCode, updateRoom, deleteRoom };
+export default { getAllRooms, createRoom, findRoomByAccessCode, updateRoom, deleteRoom };
