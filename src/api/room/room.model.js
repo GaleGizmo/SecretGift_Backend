@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const PlayerSchema = new Schema({
-    name: { type: String, required: true },
+    player_name: { type: String, required: true },
     email: { type: String, required: true },
     linked_to: { type: String, required: true },
     player_code: { type: String, required: true }
@@ -14,14 +14,25 @@ const PlayerSchema = new Schema({
   });
 const RoomSchema = new Schema({
    
-    name: { type: String, required: true },
+    room_name: { type: String, required: true },
     owner_id: { type: mongoose.Types.ObjectId, ref: 'user', required: true },
  
     average_cost: { type: Number, required: true },
     status: { type: String, required: true, enum: ['active', 'finished'] },
     room_code: { type: String },
-    players: [PlayerSchema],
-    rules: [RuleSchema],
+    players: {
+        type: [PlayerSchema],
+        validate: {
+          validator: function (players) {
+            return players.length >= 3; // Asegura que haya al menos 3 jugadores
+          },
+          message: "A room must have at least 3 players."
+        }
+      },
+      rules: {
+        type: [RuleSchema],
+        default: [] // Hace que el campo sea opcional
+      }
   },
   {
     timestamps: true,
