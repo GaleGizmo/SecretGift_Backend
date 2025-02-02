@@ -7,5 +7,6 @@ const {logUser, createUser} = userController;
 
 usersRoutes.post('/login', logUser);
 usersRoutes.post('/create', createUser);
+usersRoutes.get('/rooms/:userId', userController.getUserRooms);
 
 export default usersRoutes;
