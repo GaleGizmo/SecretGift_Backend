@@ -1,5 +1,5 @@
-import nanoid from "nanoid";
-import Room from "../api/room/room.model";
+import {nanoid} from "nanoid";
+import Room from "../api/room/room.model.js";
 
 async function generateUniqueCode() {
   let unique = false;

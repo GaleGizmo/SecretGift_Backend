@@ -34,7 +34,10 @@ const createUser = async (req, res) => {
 const getUserRooms = async (req, res) => {
     try {
         const { userId } = req.params;
-        const user = await User.findOne({ _id: userId }).populate("owned_rooms played_rooms");
+        const user = await User.findOne({ _id: userId }).populate({
+            path: "owned_rooms",
+            select: "-players.linked_to" // Excluye el campo linked_to de players
+        });
         if (!user) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
