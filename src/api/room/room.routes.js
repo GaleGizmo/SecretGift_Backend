@@ -4,9 +4,9 @@ const roomsRoutes = express.Router();
 
 roomsRoutes.get('/getallrooms', roomController.getAllRooms);
 roomsRoutes.post('/create', roomController.createRoom);
-roomsRoutes.get('/:accesCode', roomController.findRoomByAccessCode);
+roomsRoutes.get('/:accessCode', roomController.findRoomByAccessCode);
 roomsRoutes.get('/', roomController.findRoomByAccessCode);
-roomsRoutes.put('/:accesCode', roomController.updateRoom);
-roomsRoutes.delete('/:accesCode', roomController.deleteRoom);
+roomsRoutes.put('/:accessCode', roomController.updateRoom);
+roomsRoutes.delete('/:accessCode', roomController.deleteRoom);
 
 export default roomsRoutes;
