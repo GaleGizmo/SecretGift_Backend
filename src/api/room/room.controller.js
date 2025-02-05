@@ -5,8 +5,8 @@ import  { nanoid } from "nanoid";
 
 const getAllRooms = async (req, res) => {
     try {
-        const rooms = await Room.find();
-        return res.status(200).json({ rooms });
+        const games = await Room.find();
+        return res.status(200).json({ games });
     } catch (err) {
         console.log(err);
         return res.status(500).json({ message: 'Server error' });
@@ -15,71 +15,79 @@ const getAllRooms = async (req, res) => {
 
 const createRoom = async (req, res) => {
     try {
-      const room_code = await generateUniqueCode();
+      const game_code = await generateUniqueCode();
       const players = req.body.players.map(player => ({
         ...player,
         player_code: nanoid(4)
       }));
   
-      const room = new Room({ ...req.body, room_code, players });
-      await room.save();
+      const game = new Room({ ...req.body, game_code, players });
+      await game.save();
   
-      return res.status(200).json({ message: 'Room created', room });
+      return res.status(200).json({ message: 'Game created', game });
     } catch (err) {
       console.log(err);
       res.status(500).json({ message: 'Server error', error: err });
     }
   };
 
-async function findRoomByAccessCode(req, res) {
+  async function findRoomByAccessCode(req, res) {
     try {
-        const accesCode = req.params.accesCode || req.query.accesCode; 
-      const room = await Room.findOne({ "players.player_code": { $exists: true } }).lean();
-  
-      if (!room) {
-        return res.status(404).json({ message: "Room not found" });
-      }
-  
-      const matchedPlayer = room.players.find(
-        (player) => `${room.room_code}${player.player_code}` === accesCode
-      );
-  
-      if (!matchedPlayer) {
-        return res.status(404).json({ message: "Invalid access code" });
-      }
-  
-      const filteredPlayers = room.players.map((player) =>
-        player.player_code === matchedPlayer.player_code ? null : { name: player.player_name }
-      ).filter(player => player !== null);
-  
-      res.status(200).json({
-        ...room,
-        players: filteredPlayers,
-        matched_player: matchedPlayer
-      });
-  
-      res.status(200).json({ ...room, players: filteredPlayers });
+        const accessCode = req.params.accessCode || req.query.accessCode;
+
+        if (!accessCode) {
+            return res.status(400).json({ message: "Access code is required" });
+        }
+
+        // Buscar la sala que contenga el código del juego correcto
+        const game = await Room.findOne({ game_code: { $exists: true } }).lean();
+
+        if (!game) {
+            return res.status(404).json({ message: "Game not found" });
+        }
+
+        // Buscar el jugador cuyo código coincida
+        const matchedPlayer = game.players.find(
+            (player) => `${game.game_code}${player.player_code}` === accessCode
+        );
+
+        if (!matchedPlayer) {
+            return res.status(404).json({ message: "Invalid access code" });
+        }
+
+        // Filtrar jugadores sin exponer player_code
+        const filteredPlayers = game.players
+            .filter(player => player.player_code !== matchedPlayer.player_code)
+            .map(player => ({ name: player.player_name }));
+
+        return res.status(200).json({
+            ...game,
+            players: filteredPlayers,
+            matched_player: { name: matchedPlayer.player_name } // Evita exponer player_code
+        });
+
     } catch (error) {
-      res.status(500).json({ message: "Server error", error });
+        console.error("Error in findRoomByAccessCode:", error);
+        return res.status(500).json({ message: "Server error", error: error.message });
     }
-  }
-  
+}
+
 
 const updateRoom = async (req, res) => {
     try {
         const { roomCode } = req.params;
-        const room = await Room.findOneAndUpdate({ room_code: roomCode }, req.body, { new: true });
-        return res.status(200).json({ message: 'Room updated', room: room });
+        const room = await Room.findOneAndUpdate({ game_code: roomCode }, req.body, { new: true });
+        return res.status(200).json({ message: 'Game updated', room: room });
     } catch (err) {
         console.log(err);
-        return res.status(404).json({ message: 'Room not found' });
+        return res.status(404).json({ message: 'Game not found' });
     }
 }
 
 const deleteRoom = async (req, res) => {
     try {
         const { roomCode } = req.params;
-        await Room.findOneAndDelete({ room_code: roomCode });
+        await Room.findOneAndDelete({game_code: roomCode });
         return res.status(200).json({ message: 'Room deleted' });
     } catch (err) {
         console.log(err);

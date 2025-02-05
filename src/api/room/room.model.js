@@ -14,12 +14,13 @@ const PlayerSchema = new Schema({
   });
 const RoomSchema = new Schema({
    
-    room_name: { type: String, required: true },
+    game_name: { type: String, required: true },
+    game_date: { type: Date, required: true },
     owner_id: { type: mongoose.Types.ObjectId, ref: 'user', required: true },
- 
-    average_cost: { type: Number, required: true },
+    min_cost: { type: Number, required: false },
+    max_cost: { type: Number, required: false },
     status: { type: String, required: true, enum: ['active', 'finished'] },
-    room_code: { type: String },
+    game_code: { type: String },
     players: {
         type: [PlayerSchema],
         validate: {
