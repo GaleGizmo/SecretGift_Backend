@@ -38,9 +38,11 @@ const createRoom = async (req, res) => {
         if (!accessCode) {
             return res.status(400).json({ message: "Access code is required" });
         }
+        //Coge los 4 primeros caracteres del accessCode
+        const gameCode = accessCode.slice(0, 4);
 
         // Buscar la sala que contenga el código del juego correcto
-        const game = await Room.findOne({ game_code: { $exists: true } }).lean();
+        const game = await Room.findOne({ game_code: gameCode }).lean();
 
         if (!game) {
             return res.status(404).json({ message: "Game not found" });
