@@ -35,13 +35,14 @@ const getUserRooms = async (req, res) => {
     try {
         const { userId } = req.params;
         const user = await User.findOne({ _id: userId }).populate({
-            path: "owned_rooms",
+            path: "owned_games",
             select: "-players.linked_to" // Excluye el campo linked_to de players
         });
+
         if (!user) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
-        return res.status(200).json({ message: "Salas encontradas", rooms: user.owned_rooms });
+        return res.status(200).json({ message: "Salas encontradas", owned_games: user.owned_games });
     } catch (err) {
         return res.status(500).json({ message: "Error en el servidor" });
     }

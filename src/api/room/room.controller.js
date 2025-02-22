@@ -1,5 +1,6 @@
 
 import generateUniqueCode from "../../utils/generateCode.js";
+import User from "../user/user.model.js";
 import Room from "./room.model.js";
 import  { nanoid } from "nanoid";
 
@@ -16,10 +17,32 @@ const getAllRooms = async (req, res) => {
 const createRoom = async (req, res) => {
     try {
       const game_code = await generateUniqueCode();
-      const players = req.body.players.map(player => ({
+      const usedCodes = new Set();
+
+       // Obtener los emails de los jugadores para consultar la base de datos
+    const emails = req.body.players.map(player => player.email);
+    const existingUsers = await User.find({ email: { $in: emails } });
+
+    // Crear un mapa con email como clave y _id como valor
+    const userMap = existingUsers.reduce((acc, user) => {
+      acc[user.email] = user._id;
+      return acc;
+    }, {});
+
+      const players = req.body.players.map(player => {
+        let player_code;
+        do {
+          player_code = nanoid(4);
+        } while (usedCodes.has(player_code)); // Reintentar si ya existe el código en este juego
+  
+        usedCodes.add(player_code); // Registrar el código generado
+
+        return {
+        _id: userMap[player.email] || undefined, // Si el email existe, usar su _id; si no, dejar que Mongo genere uno
         ...player,
-        player_code: nanoid(4)
-      }));
+        player_code
+      };
+      });
   
       const game = new Room({ ...req.body, game_code, players });
       await game.save();
