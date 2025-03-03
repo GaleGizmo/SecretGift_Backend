@@ -2,18 +2,17 @@ import User from "./user.model.js";
 
 const logUser = async (req, res) => {
     try {
-        const { userEmail, userPassword } = req.body;
+        const { userEmail } = req.body;
         const user = await User.findOne({ email: userEmail });
         if (!user) {
             return res.status(404).json({ message: "Usuario no encontrado" });}
-        if (user.email==userEmail && user.password === userPassword) {
-            user.logged = true;
-            await user.save();
-            return res.status(200).json({ message: "Usuario logado", user_name: user.name, user_email: user.email, user_id: user._id });
-           
-        } else {
-            return res.status(404).json({ message: "Usuario o contraseña incorrectas" });
-        }
+            else {
+                user.logged = true;
+                await user.save();
+                return res.status(200).json({  user_name: user.name, user_email: user.email, user_id: user._id });
+            }
+        
+        
     } catch (err) {
         return res.status(500).json({ message: "Error en el servidor" });
        
