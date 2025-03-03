@@ -83,7 +83,7 @@ async function findRoomByAccessCode(req, res) {
     // Filtrar jugadores sin exponer player_code
     const filteredPlayers = game.players
       .filter((player) => player.player_code !== matchedPlayer.player_code)
-      .map((player) => ({ name: player.player_name }));
+      .map(({ linked_to, ...rest }) => rest);
 
     return res.status(200).json({
       ...game,
