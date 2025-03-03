@@ -88,10 +88,10 @@ async function findRoomByAccessCode(req, res) {
     return res.status(200).json({
       ...game,
       players: filteredPlayers,
-      matched_player: {
-        name: matchedPlayer.player_name,
-        linked_to: matchedPlayer.linked_to,
-      }, // Evita exponer player_code
+      matched_player:matchedPlayer.linked_to,
+      current_player: matchedPlayer.player_name,
+       
+       // Evita exponer player_code
     });
   } catch (error) {
     console.error("Error in findRoomByAccessCode:", error);
