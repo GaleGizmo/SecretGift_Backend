@@ -47,6 +47,19 @@ const createRoom = async (req, res) => {
     const game = new Room({ ...req.body, game_code, players });
     await game.save();
 
+    // Añadir el ID del juego creado al array owned_games del propietario
+    const owner = await User.findById(req.body.owner_id);
+    if (owner) {
+      owner.owned_games.push(game._id);
+      await owner.save();
+    }
+
+    // Añadir el ID del juego creado al array played_games de los jugadores existentes
+    for (const user of existingUsers) {
+      user.played_games.push(game._id);
+      await user.save();
+    }
+
     return res.status(200).json({ message: "Game created", game });
   } catch (err) {
     console.log(err);
