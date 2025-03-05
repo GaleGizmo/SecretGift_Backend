@@ -44,7 +44,7 @@ const createRoom = async (req, res) => {
         player_code,
       };
     });
-    console.log("players:", players); const game = new Room({ ...req.body, game_code, players });
+    const game = new Room({ ...req.body, game_code, players });
     await game.save();
 
     return res.status(200).json({ message: "Game created", game });
