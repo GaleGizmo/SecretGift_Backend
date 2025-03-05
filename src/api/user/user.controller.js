@@ -1,3 +1,4 @@
+import Room from "../room/room.model.js";
 import User from "./user.model.js";
 
 const logUser = async (req, res) => {
@@ -21,6 +22,7 @@ const logUser = async (req, res) => {
 
 const createUser = async (req, res) => {
     try {
+        const { email } = req.body;
          // Buscar juegos que contengan el email del usuario en el array players
          const rooms = await Room.find({ "players.email": email });
 
