@@ -27,7 +27,7 @@ const RoomSchema = new Schema({
           validator: function (players) {
             return players.length >= 3; // Asegura que haya al menos 3 jugadores
           },
-          message: "A room must have at least 3 players."
+          message: "Necesitas al menos 3 jugadores."
         }
       },
       rules: {

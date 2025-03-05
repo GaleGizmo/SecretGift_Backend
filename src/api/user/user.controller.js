@@ -21,7 +21,15 @@ const logUser = async (req, res) => {
 
 const createUser = async (req, res) => {
     try {
-        const user = new User(req.body);
+         // Buscar juegos que contengan el email del usuario en el array players
+         const rooms = await Room.find({ "players.email": email });
+
+         // Obtener los IDs de los juegos encontrados
+         const playedGamesIds = rooms.map(room => room._id);
+ 
+         // Crear el nuevo usuario con los IDs de los juegos en el array played_games
+         const user = new User({ ...req.body, played_games: playedGamesIds });
+         await user.save();
         await user.save();
         return res.status(200).json({ message: "Usuario creado", user: user });
     } catch (err) {
