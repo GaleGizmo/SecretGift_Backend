@@ -50,12 +50,15 @@ const getOwnedGames = async (req, res) => {
         return res.status(404).json({ message: "Usuario no encontrado" });
       }
   
-      const ownedGames = user.owned_games.map((game) => ({
-        id: game._id,
-        name: game.name,
-        game_date: game.game_date,
-        accesscode: game.game_code,
-      }));
+      const ownedGames = user.owned_games.map((game) => {
+        const player = game.players.find((p) => p._id.equals(userId));
+        return {
+          id: game._id,
+          name: game.game_name,
+          game_date: game.game_date,
+          accesscode: `${game.game_code}${player.player_code}`,
+        };
+      });
   
       return res.status(200).json({ owned_games: ownedGames });
     } catch (err) {
@@ -75,7 +78,7 @@ const getOwnedGames = async (req, res) => {
         const player = game.players.find((p) => p._id.equals(userId));
         return {
           id: game._id,
-          name: game.name,
+          name: game.game_name,
           game_date: game.game_date,
           accesscode: `${game.game_code}${player.player_code}`,
         };
