@@ -41,6 +41,51 @@ const createUser = async (req, res) => {
     return res.status(500).json({ message: "Error en el servidor" });
   }
 };
+const getOwnedGames = async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const user = await User.findOne({ _id: userId }).populate("owned_games");
+  
+      if (!user) {
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+  
+      const ownedGames = user.owned_games.map((game) => ({
+        id: game._id,
+        name: game.name,
+        game_date: game.game_date,
+        accesscode: game.game_code,
+      }));
+  
+      return res.status(200).json({ owned_games: ownedGames });
+    } catch (err) {
+      return res.status(500).json({ message: "Error en el servidor" });
+    }
+  };
+  const getPlayedGames = async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const user = await User.findOne({ _id: userId }).populate("played_games");
+  
+      if (!user) {
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+  
+      const playedGames = user.played_games.map((game) => {
+        const player = game.players.find((p) => p._id.equals(userId));
+        return {
+          id: game._id,
+          name: game.name,
+          game_date: game.game_date,
+          accesscode: `${game.game_code}${player.player_code}`,
+        };
+      });
+  
+      return res.status(200).json({ played_games: playedGames });
+    } catch (err) {
+      return res.status(500).json({ message: "Error en el servidor" });
+    }
+  };
 
 const getUserRooms = async (req, res) => {
   try {
@@ -60,4 +105,4 @@ const getUserRooms = async (req, res) => {
     return res.status(500).json({ message: "Error en el servidor" });
   }
 };
-export default { logUser, createUser, getUserRooms };
+export default { logUser, createUser, getUserRooms, getOwnedGames, getPlayedGames };
