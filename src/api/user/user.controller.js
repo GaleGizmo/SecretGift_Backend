@@ -56,12 +56,13 @@ const getOwnedGames = async (req, res) => {
           id: game._id,
           name: game.game_name,
           game_date: game.game_date,
-          accesscode: `${game.game_code}${player.player_code}`,
+          access_code: `${game.game_code}${player.player_code}`,
         };
       });
   
       return res.status(200).json({ owned_games: ownedGames });
     } catch (err) {
+        console.error("Error in getOwnedGames:", err);
       return res.status(500).json({ message: "Error en el servidor" });
     }
   };
@@ -80,12 +81,13 @@ const getOwnedGames = async (req, res) => {
           id: game._id,
           name: game.game_name,
           game_date: game.game_date,
-          accesscode: `${game.game_code}${player.player_code}`,
+          access_code: `${game.game_code}${player.player_code}`,
         };
       });
   
       return res.status(200).json({ played_games: playedGames });
     } catch (err) {
+        console.error("Error in getPlayedGames:", err);
       return res.status(500).json({ message: "Error en el servidor" });
     }
   };

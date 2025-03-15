@@ -1,3 +1,4 @@
+import sendEmails from "../../utils/emails.js";
 import generateUniqueCode from "../../utils/generateCode.js";
 import User from "../user/user.model.js";
 import Room from "./room.model.js";
@@ -17,7 +18,6 @@ const createRoom = async (req, res) => {
   try {
     const game_code = await generateUniqueCode();
     const usedCodes = new Set();
-    
 
     // Obtener los emails de los jugadores para consultar la base de datos
     const emails = req.body.players.map((player) => player.email);
@@ -28,7 +28,6 @@ const createRoom = async (req, res) => {
       acc[user.email] = user._id;
       return acc;
     }, {});
-   
 
     const players = req.body.players.map((player) => {
       let player_code;
@@ -59,13 +58,22 @@ const createRoom = async (req, res) => {
       user.played_games.push(game._id);
       await user.save();
     }
-
+   await sendEmailsToPlayers(game);
     return res.status(200).json({ message: "Game created", game });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Server error", error: err });
   }
 };
+
+async function sendEmailsToPlayers(game) {
+  for (player of game.players) {
+    const destinatario = player.email;
+    const asunto = "¡Amigo Invisible!";
+    const mensaje = `Hola ${player.player_name},\n\nHas sido incluido en el Amigo Invisible: "${game.name}".\n\nTu código de acceso es: ${game.game_code}${player.player_code}\n\n¡Entra en nuestra app y usa el código para ver con quién te ha unido el azar!`;
+    await sendEmails(destinatario, asunto, mensaje);
+  }
+}
 
 async function findRoomByAccessCode(req, res) {
   try {
@@ -101,10 +109,10 @@ async function findRoomByAccessCode(req, res) {
     return res.status(200).json({
       ...game,
       players: filteredPlayers,
-      matched_player:matchedPlayer.linked_to,
+      matched_player: matchedPlayer.linked_to,
       current_player: matchedPlayer.player_name,
-       
-       // Evita exponer player_code
+
+      // Evita exponer player_code
     });
   } catch (error) {
     console.error("Error in findRoomByAccessCode:", error);
