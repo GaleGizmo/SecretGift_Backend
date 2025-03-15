@@ -56,6 +56,7 @@ const getOwnedGames = async (req, res) => {
           id: game._id,
           name: game.game_name,
           game_date: game.game_date,
+          game_status: game.status,
           access_code: `${game.game_code}${player.player_code}`,
         };
       });
@@ -81,6 +82,7 @@ const getOwnedGames = async (req, res) => {
           id: game._id,
           name: game.game_name,
           game_date: game.game_date,
+          game_status: game.status,
           access_code: `${game.game_code}${player.player_code}`,
         };
       });
