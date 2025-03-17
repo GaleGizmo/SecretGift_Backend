@@ -58,7 +58,7 @@ const createRoom = async (req, res) => {
       user.played_games.push(game._id);
       await user.save();
     }
-   await sendEmailsToPlayers(game);
+   await sendEmailsToPlayers(game.players, game_code, game.game_name);
     return res.status(200).json({ message: "Game created", game });
   } catch (err) {
     console.log(err);
@@ -66,14 +66,17 @@ const createRoom = async (req, res) => {
   }
 };
 
-async function sendEmailsToPlayers(game) {
-  for (player of game.players) {
+async function sendEmailsToPlayers(gamePlayers, gameCode, gameName) {
+  for (const player of gamePlayers) {
+    console.log("Enviando correo a:", player);
     const destinatario = player.email;
     const asunto = "¡Amigo Invisible!";
-    const mensaje = `Hola ${player.player_name},\n\nHas sido incluido en el Amigo Invisible: "${game.name}".\n\nTu código de acceso es: ${game.game_code}${player.player_code}\n\n¡Entra en nuestra app y usa el código para ver con quién te ha unido el azar!`;
+    const mensaje = `Hola ${player.player_name},\n\nHas sido incluido en el Amigo Invisible: "${gameName}".\n\nTu código de acceso es: ${gameCode}${player.player_code}\n\n¡Entra en nuestra app y usa el código para ver con quién te ha unido el azar!`;
     await sendEmails(destinatario, asunto, mensaje);
+    await new Promise((resolve) => setTimeout(resolve, 500)); // Esperar 0.5 segundos entre cada correo
   }
 }
+
 
 async function findRoomByAccessCode(req, res) {
   try {
