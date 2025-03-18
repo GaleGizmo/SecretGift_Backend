@@ -7,6 +7,6 @@ roomsRoutes.post('/create', roomController.createRoom);
 roomsRoutes.get('/:accessCode', roomController.findRoomByAccessCode);
 roomsRoutes.get('/', roomController.findRoomByAccessCode);
 roomsRoutes.put('/:accessCode', roomController.updateRoom);
-roomsRoutes.delete('/:accessCode', roomController.deleteRoom);
+roomsRoutes.delete('/:gameId', roomController.deleteRoom);
 
 export default roomsRoutes;
