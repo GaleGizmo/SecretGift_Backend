@@ -10,13 +10,11 @@ const logUser = async (req, res) => {
     } else {
       user.logged = true;
       await user.save();
-      return res
-        .status(200)
-        .json({
-          user_name: user.name,
-          user_email: user.email,
-          user_id: user._id,
-        });
+      return res.status(200).json({
+        user_name: user.name,
+        user_email: user.email,
+        user_id: user._id,
+      });
     }
   } catch (err) {
     return res.status(500).json({ message: "Error en el servidor" });
@@ -42,15 +40,43 @@ const createUser = async (req, res) => {
   }
 };
 const getOwnedGames = async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const user = await User.findOne({ _id: userId }).populate("owned_games");
-  
-      if (!user) {
-        return res.status(404).json({ message: "Usuario no encontrado" });
-      }
-  
-      const ownedGames = user.owned_games.map((game) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findOne({ _id: userId }).populate("owned_games");
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const ownedGames = user.owned_games.map((game) => {
+      const player = game.players.find((p) => p._id.equals(userId));
+      return {
+        id: game._id,
+        name: game.game_name,
+        game_date: game.game_date,
+        game_status: game.status,
+        access_code: `${game.game_code}${player.player_code}`,
+      };
+    });
+
+    return res.status(200).json({ owned_games: ownedGames });
+  } catch (err) {
+    console.error("Error in getOwnedGames:", err);
+    return res.status(500).json({ message: "Error en el servidor" });
+  }
+};
+const getPlayedGames = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findOne({ _id: userId }).populate("played_games");
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const playedGames = user.played_games
+      .filter((game) => game.owner_id.toString() !== userId)
+      .map((game) => {
         const player = game.players.find((p) => p._id.equals(userId));
         return {
           id: game._id,
@@ -60,39 +86,13 @@ const getOwnedGames = async (req, res) => {
           access_code: `${game.game_code}${player.player_code}`,
         };
       });
-  
-      return res.status(200).json({ owned_games: ownedGames });
-    } catch (err) {
-        console.error("Error in getOwnedGames:", err);
-      return res.status(500).json({ message: "Error en el servidor" });
-    }
-  };
-  const getPlayedGames = async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const user = await User.findOne({ _id: userId }).populate("played_games");
-  
-      if (!user) {
-        return res.status(404).json({ message: "Usuario no encontrado" });
-      }
-  
-      const playedGames = user.played_games.map((game) => {
-        const player = game.players.find((p) => p._id.equals(userId));
-        return {
-          id: game._id,
-          name: game.game_name,
-          game_date: game.game_date,
-          game_status: game.status,
-          access_code: `${game.game_code}${player.player_code}`,
-        };
-      });
-  
-      return res.status(200).json({ played_games: playedGames });
-    } catch (err) {
-        console.error("Error in getPlayedGames:", err);
-      return res.status(500).json({ message: "Error en el servidor" });
-    }
-  };
+
+    return res.status(200).json({ played_games: playedGames });
+  } catch (err) {
+    console.error("Error in getPlayedGames:", err);
+    return res.status(500).json({ message: "Error en el servidor" });
+  }
+};
 
 const getUserRooms = async (req, res) => {
   try {
@@ -112,4 +112,10 @@ const getUserRooms = async (req, res) => {
     return res.status(500).json({ message: "Error en el servidor" });
   }
 };
-export default { logUser, createUser, getUserRooms, getOwnedGames, getPlayedGames };
+export default {
+  logUser,
+  createUser,
+  getUserRooms,
+  getOwnedGames,
+  getPlayedGames,
+};
