@@ -142,8 +142,8 @@ const updateRoom = async (req, res) => {
 
 const deleteRoom = async (req, res) => {
   try {
-    const { roomCode } = req.params;
-    await Room.findOneAndDelete({ game_code: roomCode });
+    const { gameId } = req.params;
+    await Room.findByIdAndDelete(gameId);
     return res.status(200).json({ message: "Room deleted" });
   } catch (err) {
     console.log(err);
