@@ -58,7 +58,7 @@ const createRoom = async (req, res) => {
       user.played_games.push(game._id);
       await user.save();
     }
-   await sendEmailsToPlayers(game.players, game_code, game.game_name);
+    await sendEmailsToPlayers(game.players, game_code, game.game_name);
     return res.status(200).json({ message: "Game created", game });
   } catch (err) {
     console.log(err);
@@ -76,7 +76,6 @@ async function sendEmailsToPlayers(gamePlayers, gameCode, gameName) {
     await new Promise((resolve) => setTimeout(resolve, 500)); // Esperar 0.5 segundos entre cada correo
   }
 }
-
 
 async function findRoomByAccessCode(req, res) {
   try {
@@ -143,135 +142,50 @@ const updateRoom = async (req, res) => {
 const deleteRoom = async (req, res) => {
   try {
     const { gameId } = req.params;
-    await Room.findByIdAndDelete(gameId);
-    return res.status(200).json({ message: "Room deleted" });
+    const gameToDelete = await Room.findByIdAndDelete(gameId);
+    if (!gameToDelete) {
+      return res.status(404).json({ message: "Juego no encontrado" });
+    } else {
+      // Eliminar el ID del juego eliminado del array owned_games del propietario
+      await deleteRoomFromOwnerArray(gameToDelete);
+      // Eliminar el ID del juego eliminado del array played_games de los jugadores
+      await deleteRoomFromPlayersArray(gameToDelete);
+      return res.status(200).json({ message: "Juego borrado" });
+    }
   } catch (err) {
     console.log(err);
-    return res.status(404).json({ message: "Room not found" });
+    return res.status(500).json({ message: "Error al borrar juego" });
   }
 };
 
-// const seedRooms = async () => {
-//     try {
-//       await Room.insertMany([
+async function deleteRoomFromOwnerArray(gameToDelete) {
+  try {
+    const owner = await User.findById(gameToDelete.owner_id);
+    if (owner) {
+      owner.owned_games = owner.owned_games.filter(
+        (gameId) => gameId.toString() !== gameToDelete._id.toString()
+      );
+      await owner.save();
+    }
+  } catch (err) {
+    console.error("Error in deleteRoomFromOwnerArray:", err);
+  }
+}
 
-//             {
-//               "name": "Amigo Invisible 2024",
-//               "owner_id": "60d5f9e8c2b9f632ac0f1a1a",
-//               "average_cost": 25,
-//               "status": "active",
-//               "room_code": "AB12",
-//               "players": [
-//                 {
-//                   "name": "Juan",
-//                   "email": "juan@example.com",
-//                   "linked_to": "Maria",
-//                   "player_code": "XY34"
-//                 },
-//                 {
-//                   "name": "Maria",
-//                   "email": "maria@example.com",
-//                   "linked_to": "Pedro",
-//                   "player_code": "CD56"
-//                 },
-//                 {
-//                   "name": "Pedro",
-//                   "email": "pedro@example.com",
-//                   "linked_to": "Luis",
-//                   "player_code": "EF78"
-//                 }
-//               ],
-//               "rules": [
-//                 {
-//                   "player_1": "Juan",
-//                   "player_2": "Maria"
-//                 },
-//                 {
-//                   "player_1": "Maria",
-//                   "player_2": "Pedro"
-//                 }
-//               ]
-//             },
-//             {
-//               "name": "Intercambio de Regalos",
-//               "owner_id": "60d5f9e8c2b9f632ac0f1a1b",
-//               "average_cost": 30,
-//               "status": "active",
-//               "room_code": "GH90",
-//               "players": [
-//                 {
-//                   "name": "Ana",
-//                   "email": "ana@example.com",
-//                   "linked_to": "Carlos",
-//                   "player_code": "IJ12"
-//                 },
-//                 {
-//                   "name": "Carlos",
-//                   "email": "carlos@example.com",
-//                   "linked_to": "Sofia",
-//                   "player_code": "KL34"
-//                 },
-//                 {
-//                   "name": "Sofia",
-//                   "email": "sofia@example.com",
-//                   "linked_to": "Ana",
-//                   "player_code": "MN56"
-//                 }
-//               ],
-//               "rules": [
-//                 {
-//                   "player_1": "Ana",
-//                   "player_2": "Carlos"
-//                 }
-//               ]
-//             },
-//             {
-//               "name": "Fiesta de Fin de Año",
-//               "owner_id": "60d5f9e8c2b9f632ac0f1a1c",
-//               "average_cost": 50,
-//               "status": "finished",
-//               "room_code": "OP78",
-//               "players": [
-//                 {
-//                   "name": "Luis",
-//                   "email": "luis@example.com",
-//                   "linked_to": "Elena",
-//                   "player_code": "QR90"
-//                 },
-//                 {
-//                   "name": "Elena",
-//                   "email": "elena@example.com",
-//                   "linked_to": "Roberto",
-//                   "player_code": "ST12"
-//                 },
-//                 {
-//                   "name": "Roberto",
-//                   "email": "roberto@example.com",
-//                   "linked_to": "Luis",
-//                   "player_code": "UV34"
-//                 }
-//               ],
-//               "rules": [
-//                 {
-//                   "player_1": "Luis",
-//                   "player_2": "Elena"
-//                 },
-//                 {
-//                   "player_1": "Roberto",
-//                   "player_2": "Luis"
-//                 }
-//               ]
-//             }
-
-//       ]);
-//       console.log("Datos insertados correctamente");
-//     } catch (error) {
-//       console.error("Error insertando datos:", error);
-//     }
-//   };
-
-//   seedRooms();
-
+async function deleteRoomFromPlayersArray(gameToDelete) {
+  try {
+    const playerIds = gameToDelete.players.map((player) => player._id);
+    const players = await User.find({ _id: { $in: playerIds } });
+    for (const player of players) {
+      player.played_games = player.played_games.filter(
+        (gameId) => gameId.toString() !== gameToDelete._id.toString()
+      );
+      await player.save();
+    }
+  } catch (err) {
+    console.error("Error in deleteRoomFromPlayersArray:", err);
+  }
+}
 export default {
   getAllRooms,
   createRoom,
