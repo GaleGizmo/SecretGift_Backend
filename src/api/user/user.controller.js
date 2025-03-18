@@ -75,8 +75,7 @@ const getPlayedGames = async (req, res) => {
     }
 
     const playedGames = user.played_games
-      .filter((game) => game.owner_id.toString() !== userId)
-      .map((game) => {
+        .map((game) => {
         const player = game.players.find((p) => p._id.equals(userId));
         return {
           id: game._id,
