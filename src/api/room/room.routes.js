@@ -8,6 +8,6 @@ roomsRoutes.get('/:accessCode', roomController.findRoomByAccessCode);
 roomsRoutes.get('/', roomController.findRoomByAccessCode);
 roomsRoutes.put('/:accessCode', roomController.updateRoom);
 roomsRoutes.delete('/:gameId', roomController.deleteRoom);
-roomsRoutes.post('/sendemail', roomController.sendEmail);
+roomsRoutes.post('/sendemail', roomController.sendRoomEmail);
 
 export default roomsRoutes;
