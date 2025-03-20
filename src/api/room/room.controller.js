@@ -18,9 +18,12 @@ const createRoom = async (req, res) => {
   try {
     const game_code = await generateUniqueCode();
     const usedCodes = new Set();
-
+    const gameOwnerId = req.body.owner_id;
+    const playersButGameOwner = req.body.players.filter(
+      (player) => player._id !== gameOwnerId
+    );
     // Obtener los emails de los jugadores para consultar la base de datos
-    const emails = req.body.players.map((player) => player.email);
+    const emails = playersButGameOwner.map((player) => player.email);
     const existingUsers = await User.find({ email: { $in: emails } });
 
     // Crear un mapa con email como clave y _id como valor
@@ -58,8 +61,14 @@ const createRoom = async (req, res) => {
       user.played_games.push(game._id);
       await user.save();
     }
-    await sendEmailsToPlayers(game.players, game_code, game.game_name);
-    return res.status(200).json({ message: "Game created", game });
+    const emailResults = await sendEmailsToPlayers(
+      game.players,
+      game_code,
+      game.game_name
+    );
+    return res
+      .status(200)
+      .json({ message: "Game created", game, emailResults });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Server error", error: err });
@@ -67,14 +76,26 @@ const createRoom = async (req, res) => {
 };
 
 async function sendEmailsToPlayers(gamePlayers, gameCode, gameName) {
+  const results = [];
   for (const player of gamePlayers) {
-    console.log("Enviando correo a:", player);
-    const destinatario = player.email;
-    const asunto = "¡Amigo Invisible!";
-    const mensaje = `Hola ${player.player_name},\n\nHas sido incluido en el Amigo Invisible: "${gameName}".\n\nTu código de acceso es: ${gameCode}${player.player_code}\n\n¡Entra en nuestra app y usa el código para ver con quién te ha unido el azar!`;
-    await sendEmails(destinatario, asunto, mensaje);
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Esperar 0.5 segundos entre cada correo
+    try {
+      console.log("Enviando correo a:", player);
+      const destinatario = player.email;
+      const asunto = "¡Amigo Invisible!";
+      const mensaje = `Hola ${player.player_name},\n\nHas sido incluido en el Amigo Invisible: "${gameName}".\n\nTu código de acceso es: ${gameCode}${player.player_code}\n\n¡Entra en nuestra app y usa el código para ver con quién te ha unido el azar!`;
+      const emailResult = await sendEmails(destinatario, asunto, mensaje);
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Esperar 0.5 segundos entre cada correo
+      results.push({ email: destinatario, ...emailResult });
+    } catch (error) {
+      console.error("Error enviando correo a:", player.email, error);
+      results.push({
+        email: player.email,
+        status: "error",
+        error: error.message,
+      });
+    }
   }
+  return results;
 }
 
 async function findRoomByAccessCode(req, res) {
@@ -139,6 +160,43 @@ const updateRoom = async (req, res) => {
   }
 };
 
+const sendRoomEmail = async (req, res) => {
+  try {
+    const { gameId } = req.body;
+    const { playerId } = req.body;
+    const { correctedPlayerEmail } = req.body;
+    if (!gameId || !playerId) {
+      return res.status(400).json({ message: "gameId y playerId son requeridos" });
+    }
+    
+    const game = await Room.findById(gameId);
+    if (!game) {
+      return res.status(404).json({ message: "Juego no encontrado" });
+    } 
+      const player = game.players.find((player) => player._id === playerId);
+      if (!player) {
+        return res.status(404).json({ message: "Jugador no encontrado" });
+      }
+      //Si se manda un nuevo email, sustituirlo en el jugador de esa sala
+      if (correctedPlayerEmail) {
+        game.players.find((player) => player._id === playerId).email =
+          correctedPlayerEmail;
+        await game.save();
+      }
+
+      const emailResults = await sendEmailsToPlayers(
+        [player],
+        game.game_code,
+        game.game_name
+      );
+      return res.status(200).json({ message: "Email enviados", emailResults });
+    
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Error al enviar correo" });
+  }
+};
+
 const deleteRoom = async (req, res) => {
   try {
     const { gameId } = req.params;
@@ -192,4 +250,5 @@ export default {
   findRoomByAccessCode,
   updateRoom,
   deleteRoom,
+  sendRoomEmail,
 };
