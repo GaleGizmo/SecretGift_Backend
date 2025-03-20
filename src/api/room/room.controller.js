@@ -173,7 +173,7 @@ const sendRoomEmail = async (req, res) => {
     if (!game) {
       return res.status(404).json({ message: "Juego no encontrado" });
     } 
-      const player = game.players.find((player) => player._id === playerId);
+      const player = game.players.find((player) => player._id.toString() === playerId);
       if (!player) {
         return res.status(404).json({ message: "Jugador no encontrado" });
       }
