@@ -9,8 +9,8 @@ export const handleSendGridWebhook = async (req, res) => {
         email: event.email,
         timestamp: new Date(event.timestamp * 1000),
         reason: event.reason,
-        gameCode: event.custom_args.gameCode,
-        playerCode: event.custom_args.playerCode,
+        gameCode: event.customArgs.gameCode,
+        playerCode: event.customArgs.playerCode,
       });
       await webhookEvent.save();
     }
