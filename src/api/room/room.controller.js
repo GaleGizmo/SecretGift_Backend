@@ -61,14 +61,14 @@ const createRoom = async (req, res) => {
       user.played_games.push(game._id);
       await user.save();
     }
-    const emailResults = await sendEmailsToPlayers(
+     await sendEmailsToPlayers(
       game.players,
       game_code,
       game.game_name
     );
     return res
       .status(200)
-      .json({ message: "Game created", game, emailResults });
+      .json({ message: "Juego creado correctamente", game});
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Server error", error: err });
@@ -76,23 +76,23 @@ const createRoom = async (req, res) => {
 };
 
 async function sendEmailsToPlayers(gamePlayers, gameCode, gameName) {
-  const results = [];
+  // const results = [];
   for (const player of gamePlayers) {
     try {
       console.log("Enviando correo a:", player);
       const destinatario = player.email;
-      const asunto = "¡Amigo Invisible!";
+      const asunto = gameName;
       const mensaje = `Hola ${player.player_name},\n\nHas sido incluido en el Amigo Invisible: "${gameName}".\n\nTu código de acceso es: ${gameCode}${player.player_code}\n\n¡Entra en nuestra app y usa el código para ver con quién te ha unido el azar!`;
-      const emailResult = await sendEmails(destinatario, asunto, mensaje);
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Esperar 0.5 segundos entre cada correo
-      results.push({ email: destinatario, ...emailResult });
+       await sendEmails(destinatario, asunto, mensaje, gameCode, player.player_code);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      // results.push({ email: destinatario, ...emailResult });
     } catch (error) {
       console.error("Error enviando correo a:", player.email, error);
-      results.push({
-        email: player.email,
-        status: "error",
-        error: error.message,
-      });
+      // results.push({
+      //   email: player.email,
+      //   status: "error",
+      //   error: error.message,
+      // });
     }
   }
   return results;

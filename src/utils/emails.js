@@ -4,12 +4,16 @@ dotenv.config();
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-async function sendEmails(destinatario, asunto, mensaje) {
+async function sendEmails(destinatario, asunto, mensaje, gameCode, playerCode) {
   const msg = {
     to: destinatario,
     from: "secretgiftgame@gmail.com", 
     subject: asunto,
     text: mensaje,
+    customArgs: {
+      gameCode: gameCode,
+      playerCode: playerCode,
+    },
   };
 
   try {

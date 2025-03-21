@@ -15,9 +15,11 @@ server.use(express.urlencoded({extended:true}))
 // Importar rutas usando ES Modules
 import roomsRoutes from "./src/api/room/room.routes.js";
 import usersRoutes from "./src/api/user/user.routes.js";
+import webhookRoutes from "./src/api/webhooks/webhook.routes.js";
 
 server.use("/room", roomsRoutes);
 server.use("/user", usersRoutes);
+server.use("/webhook", webhookRoutes);
 
 // Importar la conexión a la base de datos
 import db from "./src/utils/db.js";
