@@ -166,32 +166,34 @@ const sendRoomEmail = async (req, res) => {
     const { playerId } = req.body;
     const { playerEmail } = req.body;
     if (!gameId || !playerId) {
-      return res.status(400).json({ message: "gameId y playerId son requeridos" });
+      return res
+        .status(400)
+        .json({ message: "gameId y playerId son requeridos" });
     }
-    
+
     const game = await Room.findById(gameId);
     if (!game) {
       return res.status(404).json({ message: "Juego no encontrado" });
-    } 
-      const player = game.players.find((player) => player._id.toString() === playerId);
-      if (!player) {
-        return res.status(404).json({ message: "Jugador no encontrado" });
-      }
-      //Si se manda un nuevo email, sustituirlo en el jugador de esa sala
-      if (playerEmail!=player.email){ 
-        player.email = playerEmail;
-        game.players.find((player) => player._id === playerId).email =
-          playerEmail;
-       
-      }
-      await game.save();
-      const emailResults = await sendEmailsToPlayers(
-        [player],
-        game.game_code,
-        game.game_name
-      );
-      return res.status(200).json({ message: "Email enviados", emailResults });
-    
+    }
+    const player = game.players.find(
+      (player) => player._id.toString() === playerId
+    );
+    if (!player) {
+      return res.status(404).json({ message: "Jugador no encontrado" });
+    }
+    //Si se manda un nuevo email, sustituirlo en el jugador de esa sala
+    if (playerEmail != player.email) {
+      player.email = playerEmail;
+      game.players.find((player) => player._id.toString() === playerId).email =
+        playerEmail;
+    }
+    await game.save();
+    const emailResults = await sendEmailsToPlayers(
+      [player],
+      game.game_code,
+      game.game_name
+    );
+    return res.status(200).json({ message: "Email enviados", emailResults });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Error al enviar correo" });
