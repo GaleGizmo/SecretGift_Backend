@@ -76,7 +76,7 @@ const createRoom = async (req, res) => {
 };
 
 async function sendEmailsToPlayers(gamePlayers, gameCode, gameName) {
-  // const results = [];
+ 
   for (const player of gamePlayers) {
     try {
       console.log("Enviando correo a:", player);
@@ -88,14 +88,10 @@ async function sendEmailsToPlayers(gamePlayers, gameCode, gameName) {
       // results.push({ email: destinatario, ...emailResult });
     } catch (error) {
       console.error("Error enviando correo a:", player.email, error);
-      // results.push({
-      //   email: player.email,
-      //   status: "error",
-      //   error: error.message,
-      // });
+    
     }
   }
-  return results;
+ 
 }
 
 async function findRoomByAccessCode(req, res) {
