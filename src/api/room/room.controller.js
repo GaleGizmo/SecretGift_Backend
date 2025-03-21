@@ -164,7 +164,7 @@ const sendRoomEmail = async (req, res) => {
   try {
     const { gameId } = req.body;
     const { playerId } = req.body;
-    const { correctedPlayerEmail } = req.body;
+    const { playerEmail } = req.body;
     if (!gameId || !playerId) {
       return res.status(400).json({ message: "gameId y playerId son requeridos" });
     }
@@ -178,12 +178,13 @@ const sendRoomEmail = async (req, res) => {
         return res.status(404).json({ message: "Jugador no encontrado" });
       }
       //Si se manda un nuevo email, sustituirlo en el jugador de esa sala
-      if (correctedPlayerEmail) {
+      if (playerEmail!=player.email){ 
+        player.email = playerEmail;
         game.players.find((player) => player._id === playerId).email =
-          correctedPlayerEmail;
-        await game.save();
+          playerEmail;
+       
       }
-
+      await game.save();
       const emailResults = await sendEmailsToPlayers(
         [player],
         game.game_code,
