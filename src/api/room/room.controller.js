@@ -1,6 +1,7 @@
 import sendEmails from "../../utils/emails.js";
 import generateUniqueCode from "../../utils/generateCode.js";
 import User from "../user/user.model.js";
+import WebhookEvent from "../webhooks/webhook.model.js";
 import Room from "./room.model.js";
 import { nanoid } from "nanoid";
 
@@ -61,14 +62,10 @@ const createRoom = async (req, res) => {
       user.played_games.push(game._id);
       await user.save();
     }
-     await sendEmailsToPlayers(
-      game.players,
-      game_code,
-      game.game_name
-    );
+    await sendEmailsToPlayers(game.players, game_code, game.game_name);
     return res
       .status(200)
-      .json({ message: "Juego creado correctamente", game});
+      .json({ message: "Juego creado correctamente", game });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Server error", error: err });
@@ -76,22 +73,25 @@ const createRoom = async (req, res) => {
 };
 
 async function sendEmailsToPlayers(gamePlayers, gameCode, gameName) {
- 
   for (const player of gamePlayers) {
     try {
       console.log("Enviando correo a:", player);
       const destinatario = player.email;
       const asunto = gameName;
       const mensaje = `Hola ${player.player_name},\n\nHas sido incluido en el Amigo Invisible: "${gameName}".\n\nTu código de acceso es: ${gameCode}${player.player_code}\n\n¡Entra en nuestra app y usa el código para ver con quién te ha unido el azar!`;
-       await sendEmails(destinatario, asunto, mensaje, gameCode, player.player_code);
+      await sendEmails(
+        destinatario,
+        asunto,
+        mensaje,
+        gameCode,
+        player.player_code
+      );
       await new Promise((resolve) => setTimeout(resolve, 500));
       // results.push({ email: destinatario, ...emailResult });
     } catch (error) {
       console.error("Error enviando correo a:", player.email, error);
-    
     }
   }
- 
 }
 
 async function findRoomByAccessCode(req, res) {
@@ -119,11 +119,26 @@ async function findRoomByAccessCode(req, res) {
     if (!matchedPlayer) {
       return res.status(404).json({ message: "Invalid access code" });
     }
+    //  Obtener todos los eventos de correo relacionados a este juego
+    const webhookEvents = await WebhookEvent.find({ gameCode: gameCode });
 
-    // Filtrar jugadores sin exponer player_code
+    // Preparamos un diccionario { playerCode: status }
+    const statusByPlayer = {};
+    webhookEvents.forEach((event) => {
+      const code = event.playerCode;
+      if (["delivered"].includes(event.event)) {
+        statusByPlayer[code] = "delivered";
+      } else if (["bounce", "dropped"].includes(event.event)) {
+        statusByPlayer[code] = "failed";
+      }
+    });
+   
     const filteredPlayers = game.players
       .filter((player) => player.player_code !== matchedPlayer.player_code)
-      .map(({ linked_to, ...rest }) => rest);
+      .map(({ linked_to, ...rest }) =>({
+        ...rest,
+        mail_status: statusByPlayer[rest.player_code] || "pending",
+      }));
 
     return res.status(200).json({
       ...game,
@@ -131,7 +146,7 @@ async function findRoomByAccessCode(req, res) {
       matched_player: matchedPlayer.linked_to,
       current_player: matchedPlayer.player_name,
 
-      // Evita exponer player_code
+      
     });
   } catch (error) {
     console.error("Error in findRoomByAccessCode:", error);
