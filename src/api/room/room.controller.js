@@ -119,13 +119,27 @@ async function findRoomByAccessCode(req, res) {
     if (!matchedPlayer) {
       return res.status(404).json({ message: "Invalid access code" });
     }
-    //  Obtener todos los eventos de correo relacionados a este juego
-    const webhookEvents = await WebhookEvent.find({ gameCode: gameCode });
-    console.log("Webhook events:", webhookEvents);
+    // Obtener los eventos más recientes para cada combinación de gameCode y playerCode
+    const webhookEvents = await WebhookEvent.aggregate([
+      { $match: { gameCode: gameCode } },
+      {
+        $sort: { createdAt: -1 }
+      },
+      {
+        $group: {
+          _id: { gameCode: "$gameCode", playerCode: "$playerCode" },
+          event: { $first: "$event" },
+          email: { $first: "$email" },
+          createdAt: { $first: "$createdAt" },
+          reason: { $first: "$reason" }
+        }
+      }
+    ]);
+  
     // Preparamos un diccionario { playerCode: status }
     const statusByPlayer = {};
     webhookEvents.forEach((event) => {
-      console.log("Event:", event);
+     
       const code = event.playerCode;
       if (event.event == "delivered") {
         statusByPlayer[code] = "delivered";
@@ -133,14 +147,14 @@ async function findRoomByAccessCode(req, res) {
         statusByPlayer[code] = "failed";
       }
     });
-   console.log("Status by player:", statusByPlayer);
+  
     const filteredPlayers = game.players
       .filter((player) => player.player_code !== matchedPlayer.player_code)
       .map(({ linked_to, ...rest }) =>({
         ...rest,
         mail_status: statusByPlayer[rest.player_code] || "pending",
       }));
-console.log("Filtered players:", filteredPlayers);
+
     return res.status(200).json({
       ...game,
       players: filteredPlayers,
