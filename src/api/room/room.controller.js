@@ -125,21 +125,22 @@ async function findRoomByAccessCode(req, res) {
     // Preparamos un diccionario { playerCode: status }
     const statusByPlayer = {};
     webhookEvents.forEach((event) => {
+      console.log("Event:", event);
       const code = event.playerCode;
-      if (["delivered"].includes(event.event)) {
+      if (event.event == "delivered") {
         statusByPlayer[code] = "delivered";
-      } else if (["bounce", "dropped"].includes(event.event)) {
+      } else if (event.event == "dropped" || event.event == "bounce") {
         statusByPlayer[code] = "failed";
       }
     });
-   
+   console.log("Status by player:", statusByPlayer);
     const filteredPlayers = game.players
       .filter((player) => player.player_code !== matchedPlayer.player_code)
       .map(({ linked_to, ...rest }) =>({
         ...rest,
         mail_status: statusByPlayer[rest.player_code] || "pending",
       }));
-
+console.log("Filtered players:", filteredPlayers);
     return res.status(200).json({
       ...game,
       players: filteredPlayers,
