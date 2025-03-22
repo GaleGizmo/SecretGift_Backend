@@ -123,24 +123,24 @@ async function findRoomByAccessCode(req, res) {
     const webhookEvents = await WebhookEvent.aggregate([
       { $match: { gameCode: gameCode } },
       {
-        $sort: { timestamp: -1 }
+        $sort: { createdAt: -1 }
       },
       {
         $group: {
           _id: { gameCode: "$gameCode", playerCode: "$playerCode" },
           event: { $first: "$event" },
           email: { $first: "$email" },
-          timestamp: { $first: "$timestamp" },
+          createdAt: { $first: "$createdAt" },
           reason: { $first: "$reason" }
         }
       }
     ]);
-  
+  console.log(webhookEvents);
     // Preparamos un diccionario { playerCode: status }
     const statusByPlayer = {};
     webhookEvents.forEach((event) => {
      
-      const code = event.playerCode;
+      const code = event._id.playerCode;
       if (event.event == "delivered") {
         statusByPlayer[code] = "delivered";
       } else if (event.event == "dropped" || event.event == "bounce") {
