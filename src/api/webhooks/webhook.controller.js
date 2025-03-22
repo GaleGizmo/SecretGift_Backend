@@ -1,23 +1,24 @@
-import WebhookEvent from './webhook.model.js';
+import WebhookEvent from "./webhook.model.js";
 
 export const handleSendGridWebhook = async (req, res) => {
   const events = req.body;
   try {
     for (const event of events) {
+      const customArgs = event.custom_args || {};
       const webhookEvent = new WebhookEvent({
         event: event.event,
         email: event.email,
         timestamp: new Date(event.timestamp * 1000),
         reason: event.reason,
-        gameCode: event.customArgs.gameCode,
-        playerCode: event.customArgs.playerCode,
+        gameCode: customArgs.gameCode,
+        playerCode: customArgs.playerCode,
       });
       await webhookEvent.save();
     }
-    res.status(200).send('OK');
+    res.status(200).send("OK");
   } catch (error) {
     console.error("Error al procesar el webhook:", error);
-    res.status(500).send('Error al procesar el webhook');
+    res.status(500).send("Error al procesar el webhook");
   }
 };
 
@@ -28,6 +29,6 @@ export const getWebhookEventsByGameCode = async (req, res) => {
     res.status(200).json(events);
   } catch (error) {
     console.error("Error al consultar los eventos:", error);
-    res.status(500).send('Error al consultar los eventos');
+    res.status(500).send("Error al consultar los eventos");
   }
 };
