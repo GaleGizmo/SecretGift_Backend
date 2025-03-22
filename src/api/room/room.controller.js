@@ -121,7 +121,7 @@ async function findRoomByAccessCode(req, res) {
     }
     //  Obtener todos los eventos de correo relacionados a este juego
     const webhookEvents = await WebhookEvent.find({ gameCode: gameCode });
-
+    console.log("Webhook events:", webhookEvents);
     // Preparamos un diccionario { playerCode: status }
     const statusByPlayer = {};
     webhookEvents.forEach((event) => {
