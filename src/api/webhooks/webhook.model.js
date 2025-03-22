@@ -6,8 +6,8 @@ const WebhookSchema = new Schema(
     event: { type: String, required: true },
     email: { type: String, required: true },
     reason: { type: String},
-    gameCode: { type: String, required: true },
-    playerCode: { type: String, required: true },
+    gameCode: { type: String },
+    playerCode: { type: String },
   },
   {
     timestamps: true,
