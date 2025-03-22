@@ -10,7 +10,7 @@ async function sendEmails(destinatario, asunto, mensaje, gameCode, playerCode) {
     from: "secretgiftgame@gmail.com", 
     subject: asunto,
     text: mensaje,
-    unique_args: {
+    customArgs: {
       game_code: gameCode,
       player_code: playerCode,
     },
