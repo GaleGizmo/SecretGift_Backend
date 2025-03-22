@@ -123,14 +123,14 @@ async function findRoomByAccessCode(req, res) {
     const webhookEvents = await WebhookEvent.aggregate([
       { $match: { gameCode: gameCode } },
       {
-        $sort: { createdAt: -1 }
+        $sort: { timestamp: -1 }
       },
       {
         $group: {
           _id: { gameCode: "$gameCode", playerCode: "$playerCode" },
           event: { $first: "$event" },
           email: { $first: "$email" },
-          createdAt: { $first: "$createdAt" },
+          timestamp: { $first: "$timestamp" },
           reason: { $first: "$reason" }
         }
       }
