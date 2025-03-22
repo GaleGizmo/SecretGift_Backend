@@ -11,8 +11,8 @@ async function sendEmails(destinatario, asunto, mensaje, gameCode, playerCode) {
     subject: asunto,
     text: mensaje,
     unique_args: {
-      gameCode: gameCode,
-      playerCode: playerCode,
+      game_code: gameCode,
+      player_code: playerCode,
     },
   };
 
