@@ -5,15 +5,22 @@ export const handleSendGridWebhook = async (req, res) => {
   try {
     for (const event of events) {
         console.log("Evento recibido:", event); 
-      const uniqueArgs = event.unique_args || {};
+      
       const webhookEvent = new WebhookEvent({
         event: event.event,
         email: event.email,
         timestamp: new Date(event.timestamp * 1000),
         reason: event.reason,
-        gameCode: uniqueArgs.game_code,
-        playerCode: uniqueArgs.player_code,
+        gameCode: 
+          event.game_code || 
+          (event.unique_args && event.unique_args.game_code) || 
+          null,
+        playerCode: 
+          event.player_code || 
+          (event.unique_args && event.unique_args.player_code) || 
+          null,
       });
+      
       await webhookEvent.save();
     }
     res.status(200).send("OK");
