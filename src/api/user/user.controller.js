@@ -111,6 +111,34 @@ const getUserRooms = async (req, res) => {
     return res.status(500).json({ message: "Error en el servidor" });
   }
 };
+
+// const removeDuplicateGames = async () => {
+//   try {
+//     // Obtener todos los jugadores de la base de datos
+//     const players = await User.find();
+
+//     for (const player of players) {
+//       // Crear un conjunto con las IDs de owned_games para una búsqueda rápida
+//       const ownedGamesSet = new Set(player.owned_games.map(gameId => gameId.toString()));
+
+//       // Filtrar las IDs de played_games que también están en owned_games
+//       const filteredPlayedGames = player.played_games.filter(
+//         gameId => !ownedGamesSet.has(gameId.toString())
+//       );
+
+//       // Actualizar el array played_games del jugador
+//       player.played_games = filteredPlayedGames;
+      
+//       // Guardar los cambios en la base de datos
+//       await player.save();
+//     }
+
+//     console.log("Duplicados eliminados de played_games");
+//   } catch (err) {
+//     console.error("Error al eliminar duplicados de played_games:", err);
+//   }
+// };
+// removeDuplicateGames();
 export default {
   logUser,
   createUser,

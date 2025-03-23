@@ -20,20 +20,23 @@ const createRoom = async (req, res) => {
     const game_code = await generateUniqueCode();
     const usedCodes = new Set();
     const gameOwnerId = req.body.owner_id;
-    const playersButGameOwner = req.body.players.filter(
-      (player) => player._id.toString() !== gameOwnerId.toString()
-    );
+    const playersReceived = req.body.players
+    
     // Obtener los emails de los jugadores para consultar la base de datos
-    const emails = playersButGameOwner.map((player) => player.email);
+    const emails = playersReceived.map((player) => player.email);
     const existingUsers = await User.find({ email: { $in: emails } });
 
+     // Filtrar existingUsers para excluir al creador del juego
+     const existingUsersButOwner = existingUsers.filter(
+      (user) => user._id.toString() !== gameOwnerId
+    );
     // Crear un mapa con email como clave y _id como valor
-    const userMap = existingUsers.reduce((acc, user) => {
+    const userMap = existingUsersButOwner.reduce((acc, user) => {
       acc[user.email] = user._id;
       return acc;
     }, {});
 
-    const players = req.body.players.map((player) => {
+    const players = playersReceived.map((player) => {
       let player_code;
       do {
         player_code = nanoid(4);
@@ -58,7 +61,7 @@ const createRoom = async (req, res) => {
     }
 
     // Añadir el ID del juego creado al array played_games de los jugadores existentes
-    for (const user of existingUsers) {
+    for (const user of existingUsersButOwner) {
       user.played_games.push(game._id);
       await user.save();
     }
@@ -278,6 +281,7 @@ async function deleteRoomFromPlayersArray(gameToDelete) {
     console.error("Error in deleteRoomFromPlayersArray:", err);
   }
 }
+
 export default {
   getAllRooms,
   createRoom,
