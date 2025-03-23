@@ -31,7 +31,7 @@ const createRoom = async (req, res) => {
       (user) => user._id.toString() !== gameOwnerId
     );
     // Crear un mapa con email como clave y _id como valor
-    const userMap = existingUsersButOwner.reduce((acc, user) => {
+    const userMap = existingUsers.reduce((acc, user) => {
       acc[user.email] = user._id;
       return acc;
     }, {});
