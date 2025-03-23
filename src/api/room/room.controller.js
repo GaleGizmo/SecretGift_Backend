@@ -135,7 +135,7 @@ async function findRoomByAccessCode(req, res) {
         }
       }
     ]);
-  console.log(webhookEvents);
+  
     // Preparamos un diccionario { playerCode: status }
     const statusByPlayer = {};
     webhookEvents.forEach((event) => {
@@ -229,10 +229,15 @@ const sendRoomEmail = async (req, res) => {
 const deleteRoom = async (req, res) => {
   try {
     const { gameId } = req.params;
+    const {userId} = req.query;
     const gameToDelete = await Room.findByIdAndDelete(gameId);
     if (!gameToDelete) {
       return res.status(404).json({ message: "Juego no encontrado" });
-    } else {
+    } 
+    if (userId != gameToDelete.owner_id.toString()) {
+      return res.status(403).json({ message: "No tienes permiso para borrar este juego" });
+    }
+    else {
       // Eliminar el ID del juego eliminado del array owned_games del propietario
       await deleteRoomFromOwnerArray(gameToDelete);
       // Eliminar el ID del juego eliminado del array played_games de los jugadores
