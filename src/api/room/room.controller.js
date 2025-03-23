@@ -21,7 +21,7 @@ const createRoom = async (req, res) => {
     const usedCodes = new Set();
     const gameOwnerId = req.body.owner_id;
     const playersButGameOwner = req.body.players.filter(
-      (player) => player._id !== gameOwnerId
+      (player) => player._id.toString() !== gameOwnerId.toString()
     );
     // Obtener los emails de los jugadores para consultar la base de datos
     const emails = playersButGameOwner.map((player) => player.email);
