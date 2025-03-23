@@ -74,17 +74,16 @@ const getPlayedGames = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    const playedGames = user.played_games
-        .map((game) => {
-        const player = game.players.find((p) => p._id.equals(userId));
-        return {
-          id: game._id,
-          name: game.game_name,
-          game_date: game.game_date,
-          game_status: game.status,
-          access_code: `${game.game_code}${player.player_code}`,
-        };
-      });
+    const playedGames = user.played_games.map((game) => {
+      const player = game.players.find((p) => p._id.equals(userId));
+      return {
+        id: game._id,
+        name: game.game_name,
+        game_date: game.game_date,
+        game_status: game.status,
+        access_code: `${game.game_code}${player.player_code}`,
+      };
+    });
 
     return res.status(200).json({ played_games: playedGames });
   } catch (err) {
@@ -128,7 +127,7 @@ const getUserRooms = async (req, res) => {
 
 //       // Actualizar el array played_games del jugador
 //       player.played_games = filteredPlayedGames;
-      
+
 //       // Guardar los cambios en la base de datos
 //       await player.save();
 //     }
@@ -139,10 +138,48 @@ const getUserRooms = async (req, res) => {
 //   }
 // };
 // removeDuplicateGames();
+const editUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findOne({ _id: userId });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+    const edited = await User.findOneAndUpdate(
+      {
+        _id: userId,
+      },
+      req.body,
+      {
+        new: true,
+      }
+    );
+    return res
+      .status(200)
+      .json({ message: "Usuario actualizado", user: edited });
+  } catch (err) {
+    return res.status(500).json({ message: "Error en el servidor" });
+  }
+};
+const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findOne({ _id: userId });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+    await User.deleteOne({ _id: userId });
+    return res.status(200).json({ message: "Usuario eliminado" });
+  } catch (err) {
+    return res.status(500).json({ message: "Error en el servidor" });
+  }
+}
 export default {
   logUser,
   createUser,
   getUserRooms,
   getOwnedGames,
   getPlayedGames,
+  editUser,
+  deleteUser,
 };
