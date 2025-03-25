@@ -49,15 +49,21 @@ const getOwnedGames = async (req, res) => {
     }
 
     const ownedGames = user.owned_games.map((game) => {
-      const player = game.players.find((p) => p._id.equals(userId));
-      return {
-        id: game._id,
-        name: game.game_name,
-        game_date: game.game_date,
-        game_status: game.status,
-        access_code: `${game.game_code}${player.player_code}`,
-      };
-    });
+      try {
+        const player = game.players.find((p) => p._id.equals(userId));
+        return {
+          id: game._id,
+          name: game.game_name,
+          game_date: game.game_date,
+          game_status: game.status,
+          access_code: `${game.game_code}${player.player_code}`,
+        };
+      } catch (err) {
+        console.warn(`Error procesando el juego con ID ${game._id}:`, err);
+        return null; // Retornar null si hay un error
+      }
+    }).filter(game => game !== null); // Filtrar los juegos que son null
+
 
     return res.status(200).json({ owned_games: ownedGames });
   } catch (err) {
@@ -74,16 +80,23 @@ const getPlayedGames = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
+ 
     const playedGames = user.played_games.map((game) => {
-      const player = game.players.find((p) => p._id.equals(userId));
-      return {
-        id: game._id,
-        name: game.game_name,
-        game_date: game.game_date,
-        game_status: game.status,
-        access_code: `${game.game_code}${player.player_code}`,
-      };
-    });
+      try {
+        const player = game.players.find((p) => p._id.equals(userId));
+        return {
+          id: game._id,
+          name: game.game_name,
+          game_date: game.game_date,
+          game_status: game.status,
+          access_code: `${game.game_code}${player.player_code}`,
+        };
+      } catch (err) {
+        console.warn(`Error procesando el juego con ID ${game._id}:`, err);
+        return null; // Retornar null si hay un error
+      }
+    }).filter(game => game !== null); // Filtrar los juegos que son null
+
 
     return res.status(200).json({ played_games: playedGames });
   } catch (err) {
